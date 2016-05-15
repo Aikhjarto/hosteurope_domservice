@@ -6,7 +6,7 @@
 #export HE_PASSWORD="mypassword" 	# Hosteurope password (must be urlencoded)
 
 
-HE_DOMAIN="wa2.eu"		# Domain name
+HE_DOMAIN="my.domain.org"		# Domain name
 HOST="addtest"		# Host Name
 #NEW_IP="3.2.1.2" 	# Desired IP address (if not set, external IP will be used)
 #export HE_CNUMBER="12345" 		# Hosteurope "Kundennmmer"
