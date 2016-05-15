@@ -1,5 +1,11 @@
 #!/usr/bin/env bash
 
+# This script requires the following credentials to hosteurope as environment variable
+#export HE_DOMAIN="my.domain.org"
+#export HE_CNUMBER="12345"
+#export HE_PASSWORD="mypassword"
+
+
 function deploy_challenge {
     local DOMAIN="${1}" TOKEN_FILENAME="${2}" TOKEN_VALUE="${3}"
 
