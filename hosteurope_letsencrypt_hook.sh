@@ -5,6 +5,21 @@
 #export HE_CNUMBER="12345"
 #export HE_PASSWORD="mypassword"
 
+function waitns {
+    local ns="$1"
+    local DNS_SYNC_TIMEOUT=300
+    logger "Waiting $DNS_SYNC_TIMEOUT second for challenge "_acme-challenge.${DOMAIN}." to appear with ${TOKEN_VALUE} on ${ns}"
+    for ctr in $(seq 1 "$DNS_SYNC_TIMEOUT"); do
+       if [ "$(dig +short "@${ns}" TXT "_acme-challenge.${DOMAIN}." | grep "${TOKEN_VALUE}" | wc -l)" == "1" ]; then
+           logger "Found challenge on ${ns}"
+           return 0
+       fi
+    sleep 1
+    done
+    logger "Can't find challenge on ${ns}"
+    return 1
+
+}
 
 function deploy_challenge {
     local DOMAIN="${1}" TOKEN_FILENAME="${2}" TOKEN_VALUE="${3}"
@@ -26,17 +41,26 @@ function deploy_challenge {
     #   TXT record. For HTTP validation it is the value that is expected
     #   be found in the $TOKEN_FILENAME file.
     
-    logger "Deploy Challange DOMAIN=${DOMAIN}, TOKEN_FILENAME=${TOKEN_FILENAME}, TOKEN_VALUE=${TOKEN_VALUE}"
+    logger "Deploy challange DOMAIN=${DOMAIN}, TOKEN_FILENAME=${TOKEN_FILENAME}, TOKEN_VALUE=${TOKEN_VALUE}"
 	
     # Hint: ${DOMAIN} is like owncloud.my.domain.org
     # for hosteurope you have to split it up in name=owncloud and domain=my.domain.org
-    # where my.domain.org is the domain you signed for with hosteurope
-    # export HE_DOMAIN="my.domain.org"
+    # where my.domain.org is the domain you signed for with hosteurop
+    HE_DOMAIN="wa2.eu"
     HE_NAME=$(echo ${DOMAIN} | sed "s/.$HE_DOMAIN//")
     hosteurope_domservice.sh ${HE_DOMAIN} add TXT "_acme-challenge.${HE_NAME}" "${TOKEN_VALUE}"
 	
-    # give nameserver time to sync
-    sleep 60 
+    # give nameserver time to sync the changes from the API calls
+    sleep 10
+
+    # Wait for all nameservers to update each other
+    for ns in $(dig +short NS "${HE_DOMAIN}."); do
+        waitns "$ns"
+        if [ $? -ne 0 ]; then
+            clean_challenge ${DOMAIN} ${TOKEN_FILENAME} ${TOKEN_VALUE}
+	    return 1
+	fi
+    done
 	
 }
 
@@ -48,12 +72,12 @@ function clean_challenge {
     # files or DNS records that are no longer needed.
     #
     # The parameters are the same as for deploy_challenge.
-    logger "Clean Challange DOMAIN=${DOMAIN}, TOKEN_FILENAME=${TOKEN_FILENAME}, TOKEN_VALUE=${TOKEN_VALUE}"
+    logger "Clean challange DOMAIN=${DOMAIN}, TOKEN_FILENAME=${TOKEN_FILENAME}, TOKEN_VALUE=${TOKEN_VALUE}"
 
     # Hint: ${DOMAIN} is like owncloud.my.domain.org
     # for hosteurope you have to split it up in name=owncloud and domain=my.domain.org
-    # where my.domain.org is the domain you signed for with hosteurope
-    # export HE_DOMAIN="my.domain.org"
+    # where my.domain.org is the domain you signed for with hosteurop
+    HE_DOMAIN="wa2.eu"
     HE_NAME=$(echo ${DOMAIN} | sed "s/.$HE_DOMAIN//")
 	
 
@@ -85,7 +109,7 @@ function deploy_cert {
     # - TIMESTAMP
     #   Timestamp when the specified certificate was created.
 	
-    logger "Deploy Challange DOMAIN=${DOMAIN}, KEYFILE=${KEYFILE}, CERTFILE=${CERTFILE}, FULLCHAINFILE=${FULLCHAINFILE}, CHAINFILE=${CHAINFILE}, TIMESTAMP=${TIMESTAMP}"
+    logger "Deploy challange DOMAIN=${DOMAIN}, KEYFILE=${KEYFILE}, CERTFILE=${CERTFILE}, FULLCHAINFILE=${FULLCHAINFILE}, CHAINFILE=${CHAINFILE}, TIMESTAMP=${TIMESTAMP}"
 
 }
 
