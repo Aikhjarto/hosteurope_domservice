@@ -17,7 +17,7 @@ function waitns {
     logger "Waiting up to $DNS_SYNC_TIMEOUT second for challenge "_acme-challenge.${DOMAIN}." to appear with ${TOKEN_VALUE} on ${ns}"
     for ctr in $(seq 1 "$DNS_SYNC_TIMEOUT"); do
         if [ "$(dig +short "@${ns}" TXT "_acme-challenge.${DOMAIN}." | grep "${TOKEN_VALUE}" | wc -l)" == "1" ]; then
-            logger "Found challenge on ${ns} after ${crt} trys."
+            logger "Found challenge on ${ns} after ${ctr} trys."
             return 0
         fi
         sleep 1
