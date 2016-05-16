@@ -6,10 +6,15 @@
 # export HE_PASSWORD="mypassword"
 # where my.domain.org is the domain you signed for with hosteurope.
 
+# Caution: Hosteurope has a default TTL for 1 day for entries. This script can only
+# verify if the challenges are set on the hosteurope DNS servers.
+# Challenge might fail if letsencrypt has already a cached entry.
+# So use DNS-01 challenge with a hosteurope DNS server at a maximum rate of once per day.
+
 function waitns {
     local ns="$1"
     local DNS_SYNC_TIMEOUT=300
-    logger "Waiting $DNS_SYNC_TIMEOUT second for challenge "_acme-challenge.${DOMAIN}." to appear with ${TOKEN_VALUE} on ${ns}"
+    logger "Waiting up to $DNS_SYNC_TIMEOUT second for challenge "_acme-challenge.${DOMAIN}." to appear with ${TOKEN_VALUE} on ${ns}"
     for ctr in $(seq 1 "$DNS_SYNC_TIMEOUT"); do
        if [ "$(dig +short "@${ns}" TXT "_acme-challenge.${DOMAIN}." | grep "${TOKEN_VALUE}" | wc -l)" == "1" ]; then
            logger "Found challenge on ${ns}"
@@ -42,7 +47,7 @@ function deploy_challenge {
     #   TXT record. For HTTP validation it is the value that is expected
     #   be found in the $TOKEN_FILENAME file.
     
-    logger "Deploy challange DOMAIN=${DOMAIN}, TOKEN_FILENAME=${TOKEN_FILENAME}, TOKEN_VALUE=${TOKEN_VALUE}"
+    logger "Deploy challenge DOMAIN=${DOMAIN}, TOKEN_FILENAME=${TOKEN_FILENAME}, TOKEN_VALUE=${TOKEN_VALUE}"
 	
     # Hint: ${DOMAIN} is like owncloud.my.domain.org
     # for hosteurope you have to split it up in name=owncloud and domain=my.domain.org
@@ -50,10 +55,10 @@ function deploy_challenge {
     HE_NAME=$(echo ${DOMAIN} | sed "s/.$HE_DOMAIN//")
     hosteurope_domservice.sh ${HE_DOMAIN} add TXT "_acme-challenge.${HE_NAME}" "${TOKEN_VALUE}"
 	
-    # give nameserver time to sync the changes from the API calls
+    # give name server time to sync the changes from the API calls
     sleep 10
 
-    # Wait for all nameservers to update each other
+    # Wait for all name servers to update each other
     for ns in $(dig +short NS "${HE_DOMAIN}."); do
         waitns "$ns"
         if [ $? -ne 0 ]; then
@@ -72,7 +77,7 @@ function clean_challenge {
     # files or DNS records that are no longer needed.
     #
     # The parameters are the same as for deploy_challenge.
-    logger "Clean challange DOMAIN=${DOMAIN}, TOKEN_FILENAME=${TOKEN_FILENAME}, TOKEN_VALUE=${TOKEN_VALUE}"
+    logger "Clean challenge DOMAIN=${DOMAIN}, TOKEN_FILENAME=${TOKEN_FILENAME}, TOKEN_VALUE=${TOKEN_VALUE}"
 
     # Hint: ${DOMAIN} is like owncloud.my.domain.org
     # for hosteurope you have to split it up in name=owncloud and domain=my.domain.org
@@ -106,7 +111,7 @@ function deploy_cert {
     # - TIMESTAMP
     #   Timestamp when the specified certificate was created.
 	
-    logger "Deploy challange DOMAIN=${DOMAIN}, KEYFILE=${KEYFILE}, CERTFILE=${CERTFILE}, FULLCHAINFILE=${FULLCHAINFILE}, CHAINFILE=${CHAINFILE}, TIMESTAMP=${TIMESTAMP}"
+    logger "Deploy challenge DOMAIN=${DOMAIN}, KEYFILE=${KEYFILE}, CERTFILE=${CERTFILE}, FULLCHAINFILE=${FULLCHAINFILE}, CHAINFILE=${CHAINFILE}, TIMESTAMP=${TIMESTAMP}"
 
 }
 
