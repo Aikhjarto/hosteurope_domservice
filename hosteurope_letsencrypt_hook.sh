@@ -16,11 +16,11 @@ function waitns {
     local DNS_SYNC_TIMEOUT=300
     logger "Waiting up to $DNS_SYNC_TIMEOUT second for challenge "_acme-challenge.${DOMAIN}." to appear with ${TOKEN_VALUE} on ${ns}"
     for ctr in $(seq 1 "$DNS_SYNC_TIMEOUT"); do
-       if [ "$(dig +short "@${ns}" TXT "_acme-challenge.${DOMAIN}." | grep "${TOKEN_VALUE}" | wc -l)" == "1" ]; then
-           logger "Found challenge on ${ns}"
-           return 0
-       fi
-    sleep 1
+        if [ "$(dig +short "@${ns}" TXT "_acme-challenge.${DOMAIN}." | grep "${TOKEN_VALUE}" | wc -l)" == "1" ]; then
+            logger "Found challenge on ${ns} after ${crt} trys."
+            return 0
+        fi
+        sleep 1
     done
     logger "Can't find challenge on ${ns}"
     return 1
@@ -66,7 +66,9 @@ function deploy_challenge {
 	    return 1
 	fi
     done
-	
+
+    # Another pause is needed here (no idea why). Otherwise challenge fails quite often (>50%)
+    sleep 30
 }
 
 function clean_challenge {
@@ -113,6 +115,7 @@ function deploy_cert {
 	
     logger "Deploy challenge DOMAIN=${DOMAIN}, KEYFILE=${KEYFILE}, CERTFILE=${CERTFILE}, FULLCHAINFILE=${FULLCHAINFILE}, CHAINFILE=${CHAINFILE}, TIMESTAMP=${TIMESTAMP}"
 
+    systemctl reload apache
 }
 
 function unchanged_cert {
