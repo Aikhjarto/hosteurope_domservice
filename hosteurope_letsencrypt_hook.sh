@@ -1,9 +1,10 @@
 #!/usr/bin/env bash
 
 # This script requires the following credentials to hosteurope as environment variable
-#export HE_DOMAIN="my.domain.org"
-#export HE_CNUMBER="12345"
-#export HE_PASSWORD="mypassword"
+# export HE_DOMAIN="my.domain.org"
+# export HE_CNUMBER="12345"
+# export HE_PASSWORD="mypassword"
+# where my.domain.org is the domain you signed for with hosteurope.
 
 function waitns {
     local ns="$1"
@@ -45,8 +46,7 @@ function deploy_challenge {
 	
     # Hint: ${DOMAIN} is like owncloud.my.domain.org
     # for hosteurope you have to split it up in name=owncloud and domain=my.domain.org
-    # where my.domain.org is the domain you signed for with hosteurop
-    HE_DOMAIN="wa2.eu"
+
     HE_NAME=$(echo ${DOMAIN} | sed "s/.$HE_DOMAIN//")
     hosteurope_domservice.sh ${HE_DOMAIN} add TXT "_acme-challenge.${HE_NAME}" "${TOKEN_VALUE}"
 	
@@ -76,11 +76,8 @@ function clean_challenge {
 
     # Hint: ${DOMAIN} is like owncloud.my.domain.org
     # for hosteurope you have to split it up in name=owncloud and domain=my.domain.org
-    # where my.domain.org is the domain you signed for with hosteurop
-    HE_DOMAIN="wa2.eu"
     HE_NAME=$(echo ${DOMAIN} | sed "s/.$HE_DOMAIN//")
 	
-
     hosteurope_domservice.sh ${HE_DOMAIN} delete TXT "_acme-challenge.${HE_NAME}" "${TOKEN_VALUE}"
 	
     # give the caches time to settle
