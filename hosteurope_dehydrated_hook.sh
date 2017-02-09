@@ -8,7 +8,7 @@
 
 # Caution: Hosteurope has a default TTL for 1 day for entries. This script can only
 # verify if the challenges are set on the hosteurope DNS servers.
-# Challenge might fail if letsencrypt has already a cached entry.
+# Challenge might fail if dehydrated has already a cached entry.
 # So use DNS-01 challenge with a hosteurope DNS server at a maximum rate of once per day.
 
 function waitns {

@@ -13,6 +13,6 @@ export HE_PASSWORD="mypassword"
 
 'hosteurope_update_DNS_A.sh' is intended to update a A-entry if your ISP works with dynamic IP addresses.
 
-'hosteurope_letsencrypt_hook.sh' is a hook script for letsencrypt.sh which uses 'hosteurope_domservice.sh' to set the TXT entries.
+'hosteurope_dehydrated_hook.sh' is a hook script for dehydrated.sh which uses 'hosteurope_domservice.sh' to set the TXT entries.
 
 
