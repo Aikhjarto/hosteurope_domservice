@@ -2,7 +2,7 @@
 
 # This script requires the following credentials to hosteurope as environment variable
 # export HE_DOMAIN="my.domain.org"
-# export HE_CNUMBER="12345"
+# export HE_USERNAME="myusername"
 # export HE_PASSWORD="mypassword"
 # where my.domain.org is the domain you signed for with hosteurope.
 

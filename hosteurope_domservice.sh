@@ -5,8 +5,8 @@
 # 
 # This script assumes the customer number and password of your Hosteurope account
 # stored in the following environment variables:
-# export HE_CNUMBER=12345
-# export HE_PASSWORD=mypassword
+# export HE_USERNAME=myusername		# Hosteurope username
+# export HE_PASSWORD=mypassword		# Hosteurope password (must be urlencoded)
 #
 # Usage: hosteurope_domservice.sh domain command record type name value
 # * domain: domain name like example.com
@@ -34,6 +34,16 @@ VALUE=127.0.0.1
 DEBUG=""
 LOGGER_OPTS="-t hosteurope_domservice.sh -s"
 URL_PROC=""
+
+if [ -z "$HE_USERNAME" ]; then
+	echo "HE_USERNAME is unset or empty"
+	exit
+fi
+
+if [ -z "$HE_PASSWORD" ]; then
+	echo "HE_PASSWORD is unset or empty"
+	exit
+fi
 
 # file to temporary store the data for all DNS entries
 TMP_FILE="/tmp/hosteurope_DNS_dump.tmp"
@@ -114,7 +124,7 @@ get_start_line() {
 FETCH_BIN="wget -qO-"
 
 # start URL
-URL_START="https://kis.hosteurope.de/administration/domainservices/index.php?kdnummer=$HE_CNUMBER&passwd=$HE_PASSWORD&menu=2&submode=edit&mode=autodns&domain=$DOMAIN"
+URL_START="https://kis.hosteurope.de/administration/domainservices/index.php?kdnummer=$HE_USERNAME&passwd=$HE_PASSWORD&menu=2&submode=edit&mode=autodns&domain=$DOMAIN"
 
 # get list of all DNS entries (more information is stored on the webpage than it's visible). 
 # Purge unneeded stuff to save space (important on embedded devices)
@@ -187,7 +197,7 @@ esac
 # perform the command
 if [ ! -z ${URL_PROC} ]; then
 	# strip clear text username and password to prevent it from entering the logs
-	PURGED_COMMAND=$(echo "${URL_START}${URL_PROC}" | sed -e "s/$HE_CNUMBER/HE_CNUMBER/" -e "s/$HE_PASSWORD/HE_PASSWORD/")
+	PURGED_COMMAND=$(echo "${URL_START}${URL_PROC}" | sed -e "s/$HE_USERNAME/HE_USERNAME/" -e "s/$HE_PASSWORD/HE_PASSWORD/")
 	
 	if [ ! -z ${DEBUG} ]; then
 		logger $LOGGER_OPTS "DEBUG: call to ${PURGED_COMMAND}"

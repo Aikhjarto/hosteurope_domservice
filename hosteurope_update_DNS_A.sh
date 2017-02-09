@@ -2,14 +2,14 @@
 # Script for automatically update a DNS-A entry for domains hosted by http://hosteurope.de
 # The purpose of this script is to have a DNS update functionality similar to dyndns, no-ip, or afraid.org.
 # It requires the credential as environmental variable
-#export HE_CNUMBER="12345" 		# Hosteurope "Kundennmmer"
+#export HE_USERNAME="myusername"	# Hosteurope username
 #export HE_PASSWORD="mypassword" 	# Hosteurope password (must be urlencoded)
 
 
 HE_DOMAIN="my.domain.org"		# Domain name
 HOST="addtest"		# Host Name
 #NEW_IP="3.2.1.2" 	# Desired IP address (if not set, external IP will be used)
-#export HE_CNUMBER="12345" 		# Hosteurope "Kundennmmer"
+#export HE_USERNAME="myusername" 		# Hosteurope "Kundennmmer"
 #export HE_PASSWORD="mypassword" 	# Hosteurope password (must be urlencoded)
 
 # uncomment first line if you have curl and second line if you have wget
@@ -23,7 +23,7 @@ REGEX_IS_IP="(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9]
 TMP_FILE="/tmp/hosteurope_update_DNS_A.tmp"
 
 # URL-start (use variable since it occurs so often
-URL_START="https://kis.hosteurope.de/administration/domainservices/index.php?menu=2&submode=edit&mode=autodns&domain=$HE_DOMAIN&kdnummer=$HE_CNUMBER&passwd=$HE_PASSWORD"
+URL_START="https://kis.hosteurope.de/administration/domainservices/index.php?menu=2&submode=edit&mode=autodns&domain=$HE_DOMAIN&kdnummer=$HE_USERNAME&passwd=$HE_PASSWORD"
 
 # get list of all DNS entries (more information is stored on the webpage than it's visible). Purge unneeded stuff to save space (important on embedded devices)
 $FETCH_BIN "$URL_START" | grep -e "$HOST.$HE_DOMAIN" -e "hidden" -e "record" | grep -v $HE_PASSWORD> $TMP_FILE
@@ -64,7 +64,8 @@ if [ $OLD_IP != $NEW_IP ]; then
 fi
 
 # logout
-$FETCH_BIN "https://kis.hosteurope.de/?kdnummer=$HE_CNUMBER&passwd=$HE_PASSWORD&logout=1"
+$FETCH_BIN "https://kis.hosteurope.de/?kdnummer=$HE_USERNAME&passwd=$HE_PASSWORD&logout=1"
 
 # delete temp file
 rm $TMP_FILE
+
