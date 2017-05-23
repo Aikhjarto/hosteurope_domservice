@@ -27,7 +27,17 @@
 #
 # No output is written to stdout, so this script is suitable for using with cron.
 
-# Make the script more robust
+if [ -z "$HE_USERNAME" ]; then
+	echo "HE_USERNAME is unset or empty"
+	exit
+fi
+
+if [ -z "$HE_PASSWORD" ]; then
+	echo "HE_PASSWORD is unset or empty"
+	exit
+fi
+
+# Make the script more robust after checking for possibly unset variables
 set -e
 set -u
 
@@ -40,21 +50,18 @@ DEBUG=""
 LOGGER_OPTS="-t hosteurope_domservice.sh -s"
 URL_PROC=""
 
-if [ -z "$HE_USERNAME" ]; then
-	echo "HE_USERNAME is unset or empty"
-	exit
-fi
-
-if [ -z "$HE_PASSWORD" ]; then
-	echo "HE_PASSWORD is unset or empty"
-	exit
-fi
 
 # file to temporary store the data for all DNS entries
-TMP_FILE="/tmp/hosteurope_DNS_dump.tmp"
+TMP_FILE=$(mktemp -t hosteurope_DNS_dump.XXXXXX)
+if [ ! -z "$DEBUG" ]; then 
+    logger $LOGGER_OPTS "DEBUG: Using ${TMP_FILE}"
+fi
 
 # file to store result
-RES_FILE="/tmp/hosteurope_DNS_rec.html"
+RES_FILE=$(mktemp -t hosteurope_DNS_res.html.XXXXXX)
+if [ ! -z "$DEBUG" ]; then 
+    logger $LOGGER_OPTS "DEBUG: Using ${RES_FILE}"
+fi
 
 # get HOSTID by $NAME and $DOMAIN
 get_hostid() {
@@ -209,15 +216,12 @@ esac
 
 # perform the command
 if [ ! -z ${URL_PROC} ]; then
+
 	# strip clear text username and password to prevent it from entering the logs
 	PURGED_COMMAND=$(echo "${URL_START}${URL_PROC}" | sed -e "s/$HE_USERNAME/HE_USERNAME/" -e "s/$HE_PASSWORD/HE_PASSWORD/")
-	
 	if [ ! -z ${DEBUG} ]; then
 		logger $LOGGER_OPTS "DEBUG: call to ${PURGED_COMMAND}"
 	fi
-	
-	# delete old result file if there was one (to detect if one was written)
-	[[ -e ${RES_FILE} ]] && rm ${RES_FILE}
 	
 	# perform requested action
 	$FETCH_BIN "${URL_START}${URL_PROC}" | grep -v $HE_PASSWORD > ${RES_FILE}
@@ -240,3 +244,4 @@ if [ -z ${DEBUG} ]; then
 	[[ -e ${TMP_FILE} ]] && rm ${TMP_FILE}
 	[[ -e ${RES_FILE} ]] && rm ${RES_FILE}
 fi
+
