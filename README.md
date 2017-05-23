@@ -4,7 +4,6 @@ Tools for managing the domains with kis.hosteurope.de
 These scripts can require the following variable exported:
 Your registered domain, your customer number and your password.
 ```
-export HE_DOMAIN="my.domain.org"
 export HE_USERNAME="myusername"
 export HE_PASSWORD="mypassword"
 ```
