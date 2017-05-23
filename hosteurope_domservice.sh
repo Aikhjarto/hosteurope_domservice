@@ -8,10 +8,15 @@
 # export HE_USERNAME=myusername		# Hosteurope username
 # export HE_PASSWORD=mypassword		# Hosteurope password (must be urlencoded)
 #
-# Usage: hosteurope_domservice.sh domain command record type name value
+# hosteurope_domservice.sh domain command args
+#
+# Commands are:
+# * hosteurope_domservice.sh domain [add|update|setttl] record_type name value
+# * hosteurope_domservice.sh domain [get|delete] record_type name
+#
 # * domain: domain name like example.com
-# * command: add, update, delete, or get
-# * record type: supported types of resource records are A, AAAA, TXT, or CNAME
+# * command: add, update, delete, get, or setttl
+# * record_type: supported types of resource records are A, AAAA, TXT, or CNAME
 # * name: the name of the resource record
 # * value: value to set
 #
@@ -188,6 +193,14 @@ case ${2} in
 
 		echo $OLD_VAL
 		;;
+	"setttl")
+		NAME=${4}
+		VALUE=${5:-300}
+
+		get_hostid
+
+		URL_PROC="&record=$RECORDTYPE&truemode=host&action=save_ttl&ttl=$VALUE&hostid=$HOSTID&nachfrage=1&submit=Speichern"
+		;;
 	*)
 		logger $LOGGER_OPTS "ERROR: unknown command ${2}"
 		exit 1
@@ -224,6 +237,6 @@ fi
 
 # delete temporary files when not in debug mode
 if [ -z ${DEBUG} ]; then
-	rm "${TMP_FILE}"
-	rm "${RES_FILE}"
+	[[ -e ${TMP_FILE} ]] && rm ${TMP_FILE}
+	[[ -e ${RES_FILE} ]] && rm ${RES_FILE}
 fi
