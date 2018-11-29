@@ -1,3 +1,5 @@
+# HINT: As of 2018, hoseurope change the authentication method for kis.hosteurope.de so this scripts do not work since then.
+
 # hosteurope_domservice
 Tools for managing the domains with http://kis.hosteurope.de
 
