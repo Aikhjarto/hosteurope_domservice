@@ -132,11 +132,31 @@ get_start_line() {
 
 
 # uncomment first line if you have curl and second line if you have wget
-#FETCH_BIN="curl -s --url"
-FETCH_BIN="wget -qO-"
+FETCH_BIN="curl -s -b hosteurope.cookies --url "
+#FETCH_BIN="wget -qO-"
 
-# start URL
-URL_START="https://kis.hosteurope.de/administration/domainservices/index.php?kdnummer=$HE_USERNAME&passwd=$HE_PASSWORD&menu=2&submode=edit&mode=autodns&domain=$DOMAIN"
+# login
+RES=$($FETCH_BIN 'https://sso.hosteurope.de/api/app/v1/login' -H 'Origin: https://sso.hosteurope.de' -H 'Content-Type: application/json' -H 'Accept: application/json, text/plain, */*' -H 'Referer: https://sso.hosteurope.de/' -H 'Connection: keep-alive' -H 'DNT: 1' --data-binary "{\"brandId\":\"b9c8f0f0-60dd-4cab-9da8-512b352d9c1a\",\"locale\":\"de-DE\",\"identifier\":\"$HE_USERNAME\",\"password\":\"$HE_PASSWORD\"}" --compressed -c hosteurope.cookies)
+if [ $? -ne 0 ]; then
+	logger $LOGGER_OPTS "ERROR: cannot login; ${FETCH_BIN} failed with $?"
+	exit 1
+fi
+if [ -z ${RES} ]; then
+	logger $LOGGER_OPTS "ERROR: Login did not produce a result."
+	exit 1
+fi
+
+if [ ${RES} == '{"success":true}' ]; then
+	if [ ! -z $DEBUG ]; then
+		logger $LOGGER_OPTS "DEBUG: Login successfull"
+	fi
+else
+	logger $LOGGER_OPTS "ERROR: Login resulted in ${RES}"
+	exit 1
+fi
+
+# URL prefix
+URL_START="https://kis.hosteurope.de/administration/domainservices/index.php?menu=2&submode=edit&mode=autodns&domain=$DOMAIN"
 
 # get list of all DNS entries (more information is stored on the webpage than it's visible). 
 # Purge unneeded stuff to save space (important on embedded devices)
@@ -244,4 +264,3 @@ if [ -z ${DEBUG} ]; then
 	[[ -e ${TMP_FILE} ]] && rm ${TMP_FILE}
 	[[ -e ${RES_FILE} ]] && rm ${RES_FILE}
 fi
-
